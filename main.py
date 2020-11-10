@@ -12,7 +12,7 @@ from sqlite3 import Error
 #icon taskbar
 try:
     from PyQt5.QtWinExtras import QtWin
-    myappid = 'youtube.python.download.program'
+    myappid = 'speedtest.python.schedule.program'
     QtWin.setCurrentProcessExplicitAppUserModelID(myappid)
 except ImportError:
     pass
