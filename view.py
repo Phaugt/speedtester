@@ -3,8 +3,8 @@ from speedtest import Speedtest
 from PyQt5 import uic
 from PyQt5.QtCore import Qt, QFile
 from PyQt5.QtGui import QIcon
-from PyQt5.QtWidgets import (QHeaderView, QSizePolicy, QTableWidget, 
-                            QHBoxLayout, QTableWidgetItem, 
+from PyQt5.QtWidgets import (QHeaderView, QPushButton, QSizePolicy, QTableWidget, 
+                            QVBoxLayout, QTableWidgetItem, 
                             QWidget, QApplication)
 
 def resource_path(relative_path):
@@ -39,7 +39,11 @@ class Window(QWidget):
 
         self.table = QTableWidget()
         self.table.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
-        hbox = QHBoxLayout(self)
+        self.refresh = QPushButton()
+        self.refresh.setText("Refresh data")
+        self.refresh.clicked.connect(lambda: self.result())
+        hbox = QVBoxLayout(self)
+        hbox.addWidget(self.refresh)
         hbox.addWidget(self.table)
         
         #self.connection = sqlite3.connect("speed.db")
@@ -48,6 +52,7 @@ class Window(QWidget):
         self.result()
 
     def result(self, values=None):
+        self.table.clear()
         self.connection = sqlite3.connect("speed.db")
         self.connection.commit()
         cursor = self.connection.cursor()
@@ -80,7 +85,7 @@ class Speedtest(QWidget):
 
         w = Window()
 
-        self.startTest.clicked.connect(self.threadWorker)
+        self.startTest.clicked.connect(lambda: self.threadWorker())
         self.oldTest.clicked.connect(lambda: w.show())
 
     def threadWorker(self):
