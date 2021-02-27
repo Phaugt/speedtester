@@ -45,9 +45,6 @@ class Window(QWidget):
         hbox = QVBoxLayout(self)
         hbox.addWidget(self.refresh)
         hbox.addWidget(self.table)
-        
-        #self.connection = sqlite3.connect("speed.db")
-        #self.result("SELECT download,upload,ping,date FROM speedtest")
 
         self.result()
 
