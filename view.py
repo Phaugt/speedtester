@@ -85,12 +85,13 @@ class Speedtest(QWidget):
 
         w = Window()
 
-        self.startTest.clicked.connect(lambda: self.threadWorker())
+        self.startTest.clicked.connect(lambda: self.worker())
         self.oldTest.clicked.connect(lambda: w.show())
 
-    def threadWorker(self):
-        x = threading.Thread(target=self.speeddb())
-        x.start()
+    def worker(self):
+        """start a thread"""
+        t = threading.Thread(target=self.speeddb())
+        t.start()
 
     def updateLabel(self, upload, download, ping):
         
