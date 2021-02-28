@@ -1,7 +1,7 @@
-import sqlite3, sys, os, threading
+import sqlite3, sys, os
 from speedtest import Speedtest
 from PyQt5 import uic
-from PyQt5.QtCore import Qt, QFile
+from PyQt5.QtCore import QEventLoop, QObject, QRunnable, QThread, Qt, QFile, QThreadPool, pyqtSignal, pyqtSlot
 from PyQt5.QtGui import QIcon
 from PyQt5.QtWidgets import (QHeaderView, QPushButton, QSizePolicy, QTableWidget, 
                             QVBoxLayout, QTableWidgetItem, 
@@ -30,6 +30,79 @@ createDB()
 logo = resource_path('./gui/logo.png')
 s = Speedtest()
 mbps = 1000000
+
+
+class SpeedWindow(QWidget):
+    def __init__(self):
+        super(SpeedWindow, self).__init__()
+        UIFile = QFile(speedGUI)
+        UIFile.open(QFile.ReadOnly)
+        uic.loadUi(UIFile, self)
+        UIFile.close()
+
+        self.Window = Window()
+        
+        runnablesignals = RunnableSignals()
+        runnablesignals.results.connect(lambda: self.updateLabel())
+
+        self.startTest.clicked.connect(lambda: self.runTest())
+        self.oldTest.clicked.connect(lambda: self.Window.show())
+
+    def runTest(self):
+        self.eventloop = QEventLoop()
+        pool = QThreadPool.globalInstance()
+        runnable = Runnable()
+        pool.start(runnable)
+        self.eventloop.processEvents() 
+        
+        self.eventloop.exit()
+        self.startTest.setDisabled(True)
+    
+    @pyqtSlot(tuple)
+    def updateLabel(self, data):
+        print(data)
+
+        upload = data[0]
+        download = data[1]
+        ping = data[2]
+
+        self.downResult.clear()
+        self.upResult.clear()
+        self.pingResult.clear()
+
+        self.downResult.setText(f"{download} mbps")
+        self.upResult.setText(f"{upload} mbps")
+        self.pingResult.setText(f"{ping} ms")
+        self.startTest.setDisabled(False)
+
+class RunnableSignals(QObject):
+    results = pyqtSignal(tuple)
+
+class Runnable(QRunnable):
+    def __init__(self):
+        super(Runnable, self).__init__()
+        self.signal = RunnableSignals()
+
+    def run(self):
+        """runs a speedtest to the closest server 
+        and then inserts the value to the database"""
+        conn = sqlite3.connect('speed.db')
+        c = conn.cursor()
+        s.get_best_server()
+        s.download(threads=64)
+        s.upload(threads=64)
+        data = (int(s.results.download//mbps),
+                int(s.results.upload//mbps),
+                int(s.results.ping))
+        c.execute('''INSERT INTO speedtest 
+                    (download, upload, ping) 
+                    VALUES (?,?,?)''',
+                    data)
+        #self.signal.results.emit(str(s.results.upload//mbps),str(s.results.download//mbps),str(s.results.ping))
+        self.signal.results.emit(data)
+        conn.commit()
+        conn.close()
+
 
 class Window(QWidget):
     def __init__(self):
@@ -72,56 +145,11 @@ class Window(QWidget):
                 item.setData(Qt.DisplayRole, value)
                 self.table.setItem(i, j, item)
 
-class Speedtest(QWidget):
-    def __init__(self):
-        super(Speedtest, self).__init__()
-        UIFile = QFile(speedGUI)
-        UIFile.open(QFile.ReadOnly)
-        uic.loadUi(UIFile, self)
-        UIFile.close()
 
-        w = Window()
-
-        self.startTest.clicked.connect(lambda: self.worker())
-        self.oldTest.clicked.connect(lambda: w.show())
-
-    def worker(self):
-        """start a thread"""
-        t = threading.Thread(target=self.speeddb())
-        t.start()
-
-    def updateLabel(self, upload, download, ping):
-        
-        self.downResult.clear()
-        self.upResult.clear()
-        self.pingResult.clear()
-
-        self.downResult.setText(f"{download} mbps")
-        self.upResult.setText(f"{upload} mbps")
-        self.pingResult.setText(f"{ping} ms")
-
-    def speeddb(self):
-        """runs a speedtest to the closest server 
-        and then inserts the value to the database"""
-        conn = sqlite3.connect('speed.db')
-        c = conn.cursor()
-        s.get_best_server()
-        s.download(threads=64)
-        s.upload(threads=64)
-        data = (int(s.results.download//mbps),
-                int(s.results.upload//mbps),
-                int(s.results.ping))
-        c.execute('''INSERT INTO speedtest 
-                    (download, upload, ping) 
-                    VALUES (?,?,?)''',
-                    data)
-        self.updateLabel(str(s.results.upload//mbps),str(s.results.download//mbps),str(s.results.ping))
-        conn.commit()
-        conn.close()
 
 app = QApplication(sys.argv)
 app.setWindowIcon(QIcon(logo))
-ex = Speedtest()
+ex = SpeedWindow()
 ex.show()
 sys.exit(app.exec_())
 
