@@ -1,7 +1,7 @@
 import sqlite3, sys, os
 from speedtest import Speedtest
 from PyQt5 import uic
-from PyQt5.QtCore import QEventLoop, QMetaObject, QObject, QRunnable, Q_ARG, Qt, QFile, QThreadPool, pyqtSignal, pyqtSlot
+from PyQt5.QtCore import QObject, QRunnable, Qt, QFile, QThreadPool, pyqtSignal
 from PyQt5.QtGui import QIcon
 from PyQt5.QtWidgets import (QHeaderView, QPushButton, QSizePolicy, QTableWidget, 
                             QVBoxLayout, QTableWidgetItem, 
@@ -42,7 +42,6 @@ class SpeedWindow(QWidget):
 
         self.Window = Window()
     
-
         self.startTest.clicked.connect(lambda: self.runTest())
         self.oldTest.clicked.connect(lambda: self.Window.show())
 
