@@ -23,7 +23,7 @@
    </size>
   </property>
   <property name="windowTitle">
-   <string>pythonexplainedto.me speetest</string>
+   <string>pythonexplainedto.me speedtest</string>
   </property>
   <widget class="QWidget" name="verticalLayoutWidget">
    <property name="geometry">

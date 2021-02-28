@@ -1,7 +1,7 @@
 import sqlite3, sys, os
 from speedtest import Speedtest
 from PyQt5 import uic
-from PyQt5.QtCore import QEventLoop, QObject, QRunnable, QThread, Qt, QFile, QThreadPool, pyqtSignal, pyqtSlot
+from PyQt5.QtCore import QEventLoop, QMetaObject, QObject, QRunnable, Q_ARG, Qt, QFile, QThreadPool, pyqtSignal, pyqtSlot
 from PyQt5.QtGui import QIcon
 from PyQt5.QtWidgets import (QHeaderView, QPushButton, QSizePolicy, QTableWidget, 
                             QVBoxLayout, QTableWidgetItem, 
@@ -41,47 +41,41 @@ class SpeedWindow(QWidget):
         UIFile.close()
 
         self.Window = Window()
-        
-        runnablesignals = RunnableSignals()
-        runnablesignals.results.connect(lambda: self.updateLabel())
+    
 
         self.startTest.clicked.connect(lambda: self.runTest())
         self.oldTest.clicked.connect(lambda: self.Window.show())
 
     def runTest(self):
-        self.eventloop = QEventLoop()
-        pool = QThreadPool.globalInstance()
-        runnable = Runnable()
-        pool.start(runnable)
-        self.eventloop.processEvents() 
-        
-        self.eventloop.exit()
+        self.pool = QThreadPool.globalInstance()
+        self.runnable = Worker()
+        self.runnable.signals.result.connect(self.updateLabel)
         self.startTest.setDisabled(True)
-    
-    @pyqtSlot(tuple)
-    def updateLabel(self, data):
-        print(data)
-
-        upload = data[0]
-        download = data[1]
+        self.startTest.setText('Running Test...')
+        self.pool.start(self.runnable)
+        
+    def updateLabel(self,data):
+        download = data[0]
+        upload = data[1]
         ping = data[2]
 
         self.downResult.clear()
         self.upResult.clear()
         self.pingResult.clear()
-
         self.downResult.setText(f"{download} mbps")
         self.upResult.setText(f"{upload} mbps")
         self.pingResult.setText(f"{ping} ms")
+        self.startTest.setText("Speedtest")
         self.startTest.setDisabled(False)
 
-class RunnableSignals(QObject):
-    results = pyqtSignal(tuple)
+class WorkerSignals(QObject):
+    result = pyqtSignal(tuple)
 
-class Runnable(QRunnable):
+class Worker(QRunnable):
+    signals = WorkerSignals()
+
     def __init__(self):
-        super(Runnable, self).__init__()
-        self.signal = RunnableSignals()
+        super(Worker, self).__init__()
 
     def run(self):
         """runs a speedtest to the closest server 
@@ -98,10 +92,9 @@ class Runnable(QRunnable):
                     (download, upload, ping) 
                     VALUES (?,?,?)''',
                     data)
-        #self.signal.results.emit(str(s.results.upload//mbps),str(s.results.download//mbps),str(s.results.ping))
-        self.signal.results.emit(data)
         conn.commit()
         conn.close()
+        self.signals.result.emit(tuple(data))
 
 
 class Window(QWidget):
@@ -127,9 +120,9 @@ class Window(QWidget):
         self.connection.commit()
         cursor = self.connection.cursor()
         if values is None:
-            cursor.execute("SELECT download,upload,ping,date FROM speedtest")
+            cursor.execute("SELECT download,upload,ping,date FROM speedtest ORDER BY id DESC")
         else:
-            cursor.execute("SELECT download,upload,ping,date FROM speedtest", values)
+            cursor.execute("SELECT download,upload,ping,date FROM speedtest ORDER BY id DESC", values)
 
         name_of_columns = [e[0] for e in cursor.description]
         self.table.setColumnCount(len(name_of_columns))
