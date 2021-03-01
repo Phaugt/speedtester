@@ -2,10 +2,17 @@ import sqlite3, sys, os
 from speedtest import Speedtest
 from PyQt5 import uic
 from PyQt5.QtCore import QObject, QRunnable, Qt, QFile, QThreadPool, pyqtSignal
-from PyQt5.QtGui import QIcon
+from PyQt5.QtGui import QIcon, QPixmap
 from PyQt5.QtWidgets import (QHeaderView, QPushButton, QSizePolicy, QTableWidget, 
                             QVBoxLayout, QTableWidgetItem, 
                             QWidget, QApplication)
+
+try:
+    from PyQt5.QtWinExtras import QtWin
+    myappid = 'speed.test.python.program'
+    QtWin.setCurrentProcessExplicitAppUserModelID(myappid)    
+except ImportError:
+    pass
 
 def resource_path(relative_path):
     if hasattr(sys, '_MEIPASS'):
@@ -28,6 +35,7 @@ def createDB():
 speedGUI = resource_path('./gui/main.ui')
 createDB()
 logo = resource_path('./gui/logo.png')
+appbg = resource_path('./gui/bg.png')
 s = Speedtest()
 mbps = 1000000
 
@@ -39,6 +47,9 @@ class SpeedWindow(QWidget):
         UIFile.open(QFile.ReadOnly)
         uic.loadUi(UIFile, self)
         UIFile.close()
+
+        self.bg = QPixmap(appbg)
+        self.appbg.setPixmap(self.bg)
 
         self.Window = Window()
     
@@ -137,10 +148,35 @@ class Window(QWidget):
                 item.setData(Qt.DisplayRole, value)
                 self.table.setItem(i, j, item)
 
+style = '''
+QLabel {
+    color: #eeeeee;
+}
 
+QPushButton,
+QLineEdit {
+    background-color: #eeeeee;
+    border: 3px;
+    border-color: #000000;
+    height: 20 px;
+}
+QPushButton:hover {
+    color: #000000;
+    selection-background-color: #222831;
+    background-color: #FFFFFF;
+}  
+QPushButton:pressed {
+    color: #000000;
+    background-color: #EEEEEE;
+}  
+'''
 
 app = QApplication(sys.argv)
 app.setWindowIcon(QIcon(logo))
+if os.name == 'nt':
+    app.setStyleSheet(style)
+else:
+    pass
 ex = SpeedWindow()
 ex.show()
 sys.exit(app.exec_())

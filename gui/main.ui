@@ -28,13 +28,29 @@
   <widget class="QWidget" name="verticalLayoutWidget">
    <property name="geometry">
     <rect>
-     <x>20</x>
+     <x>10</x>
      <y>10</y>
-     <width>281</width>
+     <width>301</width>
      <height>221</height>
     </rect>
    </property>
    <layout class="QVBoxLayout" name="verticalLayout">
+    <property name="spacing">
+     <number>5</number>
+    </property>
+    <item>
+     <spacer name="verticalSpacer">
+      <property name="orientation">
+       <enum>Qt::Vertical</enum>
+      </property>
+      <property name="sizeHint" stdset="0">
+       <size>
+        <width>20</width>
+        <height>40</height>
+       </size>
+      </property>
+     </spacer>
+    </item>
     <item>
      <layout class="QFormLayout" name="formLayout">
       <item row="1" column="0">
@@ -65,19 +81,6 @@
         </property>
        </widget>
       </item>
-      <item row="0" column="0">
-       <spacer name="verticalSpacer">
-        <property name="orientation">
-         <enum>Qt::Vertical</enum>
-        </property>
-        <property name="sizeHint" stdset="0">
-         <size>
-          <width>20</width>
-          <height>40</height>
-         </size>
-        </property>
-       </spacer>
-      </item>
       <item row="3" column="0">
        <widget class="QLabel" name="pingResultLabel">
         <property name="text">
@@ -86,7 +89,11 @@
        </widget>
       </item>
       <item row="3" column="1">
-       <widget class="QLineEdit" name="pingResult"/>
+       <widget class="QLineEdit" name="pingResult">
+        <property name="readOnly">
+         <bool>true</bool>
+        </property>
+       </widget>
       </item>
      </layout>
     </item>
@@ -110,6 +117,21 @@
     </item>
    </layout>
   </widget>
+  <widget class="QLabel" name="appbg">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>320</width>
+     <height>250</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string/>
+   </property>
+  </widget>
+  <zorder>appbg</zorder>
+  <zorder>verticalLayoutWidget</zorder>
  </widget>
  <resources/>
  <connections/>
