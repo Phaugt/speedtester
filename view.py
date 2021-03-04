@@ -8,9 +8,12 @@ from PyQt5.QtWidgets import (QHeaderView, QPushButton, QSizePolicy, QTableWidget
                             QWidget, QApplication)
 
 try:
-    from PyQt5.QtWinExtras import QtWin
-    myappid = 'speed.test.python.program'
-    QtWin.setCurrentProcessExplicitAppUserModelID(myappid)    
+    if os.name == 'nt':
+        from PyQt5.QtWinExtras import QtWin
+        myappid = 'speed.test.python.program'
+        QtWin.setCurrentProcessExplicitAppUserModelID(myappid)  
+    else:
+        pass  
 except ImportError:
     pass
 
@@ -173,6 +176,7 @@ QPushButton:pressed {
 
 app = QApplication(sys.argv)
 app.setWindowIcon(QIcon(logo))
+
 if os.name == 'nt':
     app.setStyleSheet(style)
 else:
