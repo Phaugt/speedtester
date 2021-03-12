@@ -151,33 +151,32 @@ class Window(QWidget):
                 item.setData(Qt.DisplayRole, value)
                 self.table.setItem(i, j, item)
 
-style = '''
-QLabel {
-    color: #eeeeee;
-}
-
-QPushButton,
-QLineEdit {
-    background-color: #eeeeee;
-    border: 3px;
-    border-color: #000000;
-    height: 20 px;
-}
-QPushButton:hover {
-    color: #000000;
-    selection-background-color: #222831;
-    background-color: #FFFFFF;
-}  
-QPushButton:pressed {
-    color: #000000;
-    background-color: #EEEEEE;
-}  
-'''
-
 app = QApplication(sys.argv)
 app.setWindowIcon(QIcon(logo))
 
-if os.name == 'nt':
+if os.name in ['posix','nt']:
+    style = '''
+    QLabel {
+        color: #eeeeee;
+    }
+
+    QPushButton,
+    QLineEdit {
+        background-color: #eeeeee;
+        border: 3px;
+        border-color: #000000;
+        height: 20 px;
+    }
+    QPushButton:hover {
+        color: #000000;
+        selection-background-color: #222831;
+        background-color: #FFFFFF;
+    }  
+    QPushButton:pressed {
+        color: #000000;
+        background-color: #EEEEEE;
+    }  
+    '''
     app.setStyleSheet(style)
 else:
     pass
